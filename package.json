@@ -1,0 +1,25 @@
+{
+  "name": "proyectocoloniaca",
+  "version": "1.0.0",
+  "description": "Proyecto Fomentar el Cuidado del Medio Ambiente Corriendo UMG",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "keywords": [
+    "123"
+  ],
+  "author": "Grupo 6",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
+    "body-parser": "^1.19.0",
+    "connect-multiparty": "^2.2.0",
+    "express": "^4.17.1",
+    "jwt-simple": "^0.5.6",
+    "moment": "^2.29.1",
+    "mongoose": "^5.11.18",
+    "nodemon": "^2.0.7"
+  }
+}
