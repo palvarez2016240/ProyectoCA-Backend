@@ -62,14 +62,11 @@ function loginUsuario(req, res) {
             if (userEncontrado) {
                 bcrypt.compare(params.password, userEncontrado.password, (err, passwordVerificado) => {
                     if (passwordVerificado) {
-                        if (params.getToken === 'true') {
+
                             return res.status(200).send({
-                                token: jwt.createToken(userEncontrado)
+                                token: jwt.createToken(userEncontrado), userEncontrado
+                                
                             })
-                        } else {
-                            userEncontrado.password = undefined;
-                            return res.status(200).send({ userEncontrado });
-                        }
                     } else {
                         return res.status(500).send({ mensaje: "Contraseña incorrecta" });
                     }
@@ -86,9 +83,10 @@ function loginUsuario(req, res) {
 function editarUsuario(req, res) {
     var idUsuario = req.params.id;
     var params = req.body;
+    var usuarioAntiguo;
 
-    if (!params.nombre && !params.apellido && !params.usuario) {
-        return res.status(500).send({ mensaje: 'No hay ningun parametro correcto para editar' });
+    if (!params.nombre || !params.apellido || !params.usuario) {
+        return res.status(500).send({ mensaje: 'Algunos campos estan vacios' });
     }
 
     if (req.user.sub != idUsuario) {
@@ -100,27 +98,39 @@ function editarUsuario(req, res) {
 
     delete params.password;
 
-    usuario.find({ usuario: params.usuario })
-        .exec((err, usuarioEncontrado) => {
-            if (err) return res.status(500).send({ mensaje: "Error en la peticion de usuario" });
-            if (usuarioEncontrado && usuarioEncontrado.length >= 1) {
-                return res.status(500).send({ mensaje: "El nombre de usuario ya existe" });
-            } else {
-                usuario.findOne({ _id: idUsuario }).exec((err, usuarioEncontrado) => {
-                    if (err) return res.status(500).send({ mensaje: "Error en la peticion obtener la usuario, talvez no existe la usuario" });
-                    if (!usuarioEncontrado) return res.status(500).send({ mensaje: "Error en la peticion, no existe el usuario" });
-                    usuario.findByIdAndUpdate(idUsuario, params, { new: true }, (err, usuarioactualizada) => {
-                        if (err) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
-                        if (!usuarioactualizada) return res.status(500).send({ mensaje: "No se ha podido editar al usuario" });
-                        if (usuarioactualizada) {
-                            return res.status(200).send({ mensaje: "Usuario editado correctamente" });
-                        }
+    usuario.findOne({ _id: idUsuario }).exec((err, usuarioEncontrado) => {
+            if (err) return res.status(500).send({ mensaje: "Error en la peticion obtener la usuario, talvez no existe la usuario" });
+            if (!usuarioEncontrado) return res.status(500).send({ mensaje: "Error en la peticion, no existe el usuario" });
+            usuarioAntiguo = usuarioEncontrado.usuario;
+
+            if(usuarioAntiguo != params.usuario){
+                usuario.find({ usuario: params.usuario }).exec((err, usuarioEncontrado) => {        
+                    if (err) return res.status(500).send({ mensaje: "Error en la peticion de usuario" });
+                    if (usuarioEncontrado && usuarioEncontrado.length >= 1) {
+                        return res.status(500).send({ mensaje: "El nombre de usuario ya existe" });
+                    } else {
+
+                        usuario.findByIdAndUpdate(idUsuario, params, { new: true }, (err, usuarioactualizada) => {
+                            if (err) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
+                            if (!usuarioactualizada) return res.status(500).send({ mensaje: "No se ha podido editar al usuario" });
+                            if (usuarioactualizada) {
+                                return res.status(200).send({ usuarioactualizada});
+                            }
+                        })
                     }
-                    )
-                }
-                )
+                })
+            }else{
+
+                usuario.findByIdAndUpdate(idUsuario, params, { new: true }, (err, usuarioactualizada) => {
+                    if (err) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
+                    if (!usuarioactualizada) return res.status(500).send({ mensaje: "No se ha podido editar al usuario" });
+                    if (usuarioactualizada) {
+                        return res.status(200).send({ usuarioactualizada});
+                    }
+                })
             }
-        })
+        }
+    )
 }
 
 function eliminarUsuario(req, res) {
@@ -157,7 +167,7 @@ function admin(res) {
             usuarioModel.nombre = 'ADMIN';
             usuarioModel.apellido = 'ADMIN';
             usuarioModel.usuario = 'admin';
-            usuarioModel.password = '123456';
+            usuarioModel.password = '123';
             usuarioModel.rol = 'ROL_ADMIN'
 
             bcrypt.hash('123', null, null, (err, passwordEncriptada) => {

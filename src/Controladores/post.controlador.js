@@ -3,9 +3,10 @@
 var post = require("../Modelos/post.model");
 var comment = require("../Modelos/comment.model");
 const { param } = require("express/lib/request");
-var dateToday = Date();
+var dateToday = new Date();
 var fs = require('fs');
 var path = require('path');
+const { Console } = require("console");
 
 function createPost(req, res) {
     var idPost;

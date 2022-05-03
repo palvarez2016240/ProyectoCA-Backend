@@ -21,12 +21,12 @@ api.get("/obtenerImagenPost/:imagen", postControlador.obtenerImagen);
 api.put("/updatePost/:post", md_autorizacion.ensureAuth, postControlador.updatePost);
 api.put("/updateImagePost/:idPost", [md_autorizacion.ensureAuth, md_subirImagen], postControlador.updatePicture);
 api.delete("/deletePost/:idPost", md_autorizacion.ensureAuth, postControlador.deletePost);
-api.get('/mostrarPost', postControlador.mostrarPost);
+api.get('/mostrarPost', postControlador.mostrarPost); //
 api.get('/autorPost/:idAutor', postControlador.postAutor);
-api.get("/verPost/:idPost", postControlador.verPost);
-api.post("/createComment/:idPost", commentControlador.createComment);
+api.get("/verPost/:idPost", postControlador.verPost); //
+api.post("/createComment/:idPost", commentControlador.createComment); //
 api.delete("/deleteComment/:idComment", md_autorizacion.ensureAuth ,commentControlador.deleteComment);
-api.get("/readComment/:idComment", commentControlador.readComment);
-api.get("/commentPost/:idPost", commentControlador.commentPost);
+api.get("/readComment/:idComment", commentControlador.readComment); //
+api.get("/commentPost/:idPost", commentControlador.commentPost); //
 
 module.exports = api;

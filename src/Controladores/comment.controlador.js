@@ -6,6 +6,7 @@ const { param } = require("express/lib/request");
 var fs = require('fs');
 var path = require('path');
 const res = require("express/lib/response");
+var today = new Date();
 
 function createComment(req, res) {
     var commentModel = new comment();
@@ -15,6 +16,7 @@ function createComment(req, res) {
     if (params.comment) {
         commentModel.comment = params.comment;
         commentModel.idPost = idPost;
+        commentModel.datePublication = today;
 
         post.findOne({ _id: idPost }).exec((err, postFound) => {
             if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
@@ -81,10 +83,14 @@ function commentPost(req, res) {
             })
         }
         else {
-            return res.status(500).send({mensaje: "Los comentario estan desactivados"})
+            return res.status(200).send({mensaje: "Los comentario estan desactivados"})
         }  
     })
 
+}
+
+function comentarios(req, res) {
+    comment.find()
 }
 
 module.exports = {
