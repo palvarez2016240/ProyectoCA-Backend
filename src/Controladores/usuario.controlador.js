@@ -187,7 +187,7 @@ function admin(res) {
 }
 
 function mostrarPublicadores(req, res) {
-    
+
     usuario.find({ rol: "ROL_Publicador" }).exec((err, publicadores) => {
         if (err) return res.status(500).send({ mensaje: 'Error en la peticion de obtener los publicadores' });
         if (publicadores.length === 0) return res.status(404).send({ mensaje: "No hay publicadores" });

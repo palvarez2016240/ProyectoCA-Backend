@@ -16,17 +16,18 @@ api.put('/editarUsuario/:id', md_autorizacion.ensureAuth, usuarioControlador.edi
 api.delete('/eliminarUsuario/:id', md_autorizacion.ensureAuth, usuarioControlador.eliminarUsuario);
 api.get('/mostrarPublicadores', usuarioControlador.mostrarPublicadores);
 api.get('/buscarPublicador/:id', usuarioControlador.buscarPublicador);
-api.post('/createPost', [md_autorizacion.ensureAuth, md_subirImagen] ,postControlador.createPost);
-api.get("/obtenerImagenPost/:imagen", postControlador.obtenerImagen);
-api.put("/updatePost/:post", md_autorizacion.ensureAuth, postControlador.updatePost);
-api.put("/updateImagePost/:idPost", [md_autorizacion.ensureAuth, md_subirImagen], postControlador.updatePicture);
-api.delete("/deletePost/:idPost", md_autorizacion.ensureAuth, postControlador.deletePost);
-api.get('/mostrarPost', postControlador.mostrarPost); //
+api.post('/createPost', [md_autorizacion.ensureAuth, md_subirImagen] ,postControlador.createPost); 
+api.get("/obtenerImagenPost/:imagen", postControlador.obtenerImagen); //
+api.put("/updatePost/:post", md_autorizacion.ensureAuth, postControlador.updatePost); 
+api.put("/updateImagePost/:idPost", [md_autorizacion.ensureAuth, md_subirImagen], postControlador.updatePicture); //
+api.delete("/deletePost/:idPost", md_autorizacion.ensureAuth, postControlador.deletePost); 
+api.get('/mostrarPost', postControlador.mostrarPost); 
 api.get('/autorPost/:idAutor', postControlador.postAutor);
-api.get("/verPost/:idPost", postControlador.verPost); //
-api.post("/createComment/:idPost", commentControlador.createComment); //
+api.get("/verPost/:idPost", postControlador.verPost); 
+api.post("/createComment/:idPost", commentControlador.createComment); 
 api.delete("/deleteComment/:idComment", md_autorizacion.ensureAuth ,commentControlador.deleteComment);
-api.get("/readComment/:idComment", commentControlador.readComment); //
-api.get("/commentPost/:idPost", commentControlador.commentPost); //
+api.get("/readComment/:idComment", commentControlador.readComment); 
+api.get("/commentPost/:idPost", commentControlador.commentPost); 
+api.get("/comentarios", commentControlador.comentarios); 
 
 module.exports = api;

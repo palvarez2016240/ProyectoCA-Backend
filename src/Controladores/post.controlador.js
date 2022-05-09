@@ -27,6 +27,39 @@ function createPost(req, res) {
         postModel.authorName = `${req.user.nombre} ${req.user.apellido}`;
         postModel.comments = params.comments;
 
+
+        postModel.save((err, postPublicado) => {
+            if (err) return res.status(500).send({ mensaje: "Error al intentar publicar el post" });
+            if (!postPublicado) return res.status(500).send({ mensaje: "Error al intentar publicar el post" });
+            return res.status(200).send({postPublicado});
+        })
+
+
+    }
+    else {
+        return res.status(500).send({ mensaje: "Algunos campos estan vacios" })
+    }
+}
+
+function createPostImg(req, res) {
+    var idPost;
+    var postModel = new post();
+    var params = req.body;
+
+    if (req.user.rol != "ROL_Publicador") {
+        return res.status(500).send({ mensaje: "Solo un publicador puede hacer posts" });
+    }
+
+    if (params.title && params.description && params.comments) {
+
+        postModel.title = params.title;
+        postModel.description = params.description;
+        postModel.datePublication = dateToday;
+        postModel.dateUpdate = null;
+        postModel.author = req.user.sub;
+        postModel.authorName = `${req.user.nombre} ${req.user.apellido}`;
+        postModel.comments = params.comments;
+
         if (req.files) {
 
             //En esta variable se guardara la ruta de la imagen
@@ -90,7 +123,7 @@ function updatePost(req, res) {
         if (err) return res.status(500).send({ mensaje: "Error al buscar el post" });
         var idAuthor = postFound.author;
 
-        if (idRequested == idAuthor) {
+        if (idRequested == idAuthor || req.user.rol == "ROL_ADMIN") {
             post.findByIdAndUpdate(idPost, params, { new: true }, (err, postUpdated) => {
                 if (err) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
                 if (!postUpdated) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
@@ -100,7 +133,6 @@ function updatePost(req, res) {
             })
         }
         else {
-            console.log(idAuthor, idRequested)
             return res.status(500).send({ mensaje: "El post no te pertenece" });
         }
     })
@@ -176,7 +208,7 @@ function deletePost(req, res) {
 
             comment.deleteMany({ idPost: publicacion }, { multi: true }, (err, commentDeleted) => {
                 if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
-                if(!commentDeleted) return res.status(500).send({mensaje: "No se pudo eliminar los comentarios"})
+                if (!commentDeleted) return res.status(500).send({ mensaje: "No se pudo eliminar los comentarios" })
                 return res.status(200).send({ mensaje: "Post eliminado correctamente" });
             })
         })
@@ -186,7 +218,7 @@ function deletePost(req, res) {
 
 function mostrarPost(req, res) {
 
-    post.find({}).exec((err, postFound) => {
+    post.find({}).sort({datePublication: -1}).exec((err, postFound) => {
         if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
         if (postFound.length === 0) return res.status(404).send({ mensaje: "No hay posts" });
         if (!postFound) return res.status(404).send({ mensaje: 'No hay posts' });
@@ -197,7 +229,7 @@ function mostrarPost(req, res) {
 function postAutor(req, res) {
     var idAuthor = req.params.idAutor;
 
-    post.find({ author: idAuthor }).exec((err, postFound) => {
+    post.find({ author: idAuthor }).sort({datePublication: -1}).exec((err, postFound) => {
         if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
         if (postFound.length === 0) return res.status(404).send({ mensaje: "No hay posts" });
         if (!postFound) return res.status(404).send({ mensaje: 'No hay posts' });

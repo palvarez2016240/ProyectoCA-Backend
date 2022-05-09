@@ -21,8 +21,12 @@ function createComment(req, res) {
         post.findOne({ _id: idPost }).exec((err, postFound) => {
             if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
             if (!postFound) return res.status(404).send({ mensaje: "El post no existe" });
+            var name = postFound.title;
 
             if (postFound.comments === true) {
+
+                commentModel.namePost = name;
+
                 commentModel.save((err, commentSaved) => {
                     if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
                     if (!commentSaved) return res.status(500).send({ mensaje: "No se pudo guardar el comentario" });
@@ -42,10 +46,6 @@ function createComment(req, res) {
 function deleteComment(req, res) {
     var idComment = req.params.idComment;
 
-    if (req.user.rol != "ROL_ADMIN" && req.user.rol != "ROL_Publicador") {
-        return res.status(500).send({ mensaje: "Solo el ADMIN o un publicador puede eliminar un comentario" });
-    }
-
     comment.findOne({ _id: idComment }).exec((err, commentFound) => {
         if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
         if (!commentFound) return res.status(500).send({ mensaje: "El comentario no existe" });
@@ -64,6 +64,7 @@ function readComment(req, res) {
     comment.findOne({ _id: idComment }).exec((err, commentFound) => {
         if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
         if (!commentFound) return res.status(404).send({ mensaje: "El comentario no existe" });
+        console.log(commentFound)
         return res.status(200).send({ commentFound })
     })
 }
@@ -90,12 +91,17 @@ function commentPost(req, res) {
 }
 
 function comentarios(req, res) {
-    comment.find()
+    comment.find().sort({datePublication: -1}).exec((err, comentFound)=>{
+        if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
+        if (!comentFound) return res.status(404).send({ mensaje: "El comentario no existe" });
+        return res.status(200).send({ comentFound })
+    })
 }
 
 module.exports = {
     createComment,
     deleteComment,
     readComment,
-    commentPost
+    commentPost,
+    comentarios
 }
