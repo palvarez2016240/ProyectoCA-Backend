@@ -7,11 +7,15 @@ var postSchema = Schema({
     title: String,
     picture: String,
     description: String,
-    datePublication: Date,
-    dateUpdate: Date,
+    datePublication: String,
+    dateUpdate: String,
     author: {type: Schema.Types.ObjectId, ref: 'usuario'},
     authorName: String,
-    comments: Boolean
+    comments: Boolean,
+    linkVideo: String,
+    review: String,
+    live: Boolean,
+    dateHoy: Date
 });
 
 module.exports = mongoose.model('post', postSchema);

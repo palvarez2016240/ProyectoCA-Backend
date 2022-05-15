@@ -4,12 +4,9 @@ var post = require("../Modelos/post.model");
 var comment = require("../Modelos/comment.model");
 const { param } = require("express/lib/request");
 var dateToday = new Date();
-var fs = require('fs');
-var path = require('path');
-const { Console } = require("console");
+var  mes;
 
 function createPost(req, res) {
-    var idPost;
     var postModel = new post();
     var params = req.body;
 
@@ -17,89 +14,100 @@ function createPost(req, res) {
         return res.status(500).send({ mensaje: "Solo un publicador puede hacer posts" });
     }
 
-    if (params.title && params.description && params.comments) {
+    if (params.title && params.description && params.comments && params.review && params.picture) {
 
         postModel.title = params.title;
         postModel.description = params.description;
-        postModel.datePublication = dateToday;
         postModel.dateUpdate = null;
+        postModel.dateHoy = dateToday;
         postModel.author = req.user.sub;
         postModel.authorName = `${req.user.nombre} ${req.user.apellido}`;
         postModel.comments = params.comments;
+        postModel.review = params.review;
+        postModel.picture = params.picture;
+
+        var fechas = dateToday.toString()
+        var fechaSplit = fechas.split(" ");
+            
+        switch (fechaSplit[1]) {
+                case 'Jan':
+                    mes = '01';
+                    break;
+
+                case 'Feb':
+                    mes = '02';
+                    break;
+            
+                case 'Mar':
+                    mes = '03';
+                    break;
+
+                case 'Apr':
+                    mes = '04';
+                    break;
+            
+                case 'May':
+                    mes = '05';
+                    break;
+
+                case 'Jun':
+                    mes = '06';
+                    break;
+
+                case 'Jul':
+                    mes = '07';
+                    break;
+
+                case 'Aug':
+                    mes = '08';
+                    break;
+
+                case 'Sep':
+                    mes = '09';
+                    break;
+
+                case 'Oct':
+                    mes = '10';
+                    break;
+
+                case 'Nov':
+                    mes = '11';
+                    break;
+
+                 case 'Dec':
+                    mes = '12';
+                    break;
+        }
+             
+        var fecha = `${fechaSplit[2]}/${mes}/${fechaSplit[3]} ${fechaSplit[4]}`;
+
+        postModel.datePublication = fecha; 
+
+        if (params.linkVideo) {
+            
+            var link = params.linkVideo;
+            var linkSplit = link.split('/');
+            var video = linkSplit[3];
+
+            postModel.linkVideo = video;
+            postModel.live = params.live;
 
 
-        postModel.save((err, postPublicado) => {
-            if (err) return res.status(500).send({ mensaje: "Error al intentar publicar el post" });
-            if (!postPublicado) return res.status(500).send({ mensaje: "Error al intentar publicar el post" });
-            return res.status(200).send({postPublicado});
-        })
+            postModel.save((err, postPublicado) => {
+                if (err) return res.status(500).send({ mensaje: "Error al intentar publicar el post" });
+                if (!postPublicado) return res.status(500).send({ mensaje: "Error al intentar publicar el post" });
+                return res.status(200).send({ postPublicado });
+            })
 
-
-    }
-    else {
-        return res.status(500).send({ mensaje: "Algunos campos estan vacios" })
-    }
-}
-
-function createPostImg(req, res) {
-    var idPost;
-    var postModel = new post();
-    var params = req.body;
-
-    if (req.user.rol != "ROL_Publicador") {
-        return res.status(500).send({ mensaje: "Solo un publicador puede hacer posts" });
-    }
-
-    if (params.title && params.description && params.comments) {
-
-        postModel.title = params.title;
-        postModel.description = params.description;
-        postModel.datePublication = dateToday;
-        postModel.dateUpdate = null;
-        postModel.author = req.user.sub;
-        postModel.authorName = `${req.user.nombre} ${req.user.apellido}`;
-        postModel.comments = params.comments;
-
-        if (req.files) {
-
-            //En esta variable se guardara la ruta de la imagen
-            var direccionArchivo = req.files.imagen.path;
-
-            //Se elimina las diagonales invertidas de la ruta
-            var direccion_split = direccionArchivo.split('\\');
-
-            //En esta variable se guarda el nombre del archivo
-            var nombre_archivo = direccion_split[3];
-
-            //En esta variable se separa el nombre del archivo de su extension  
-            var extension_archivo = nombre_archivo.split('.');
-
-            //Se guarda el nombre de la extension
-            var nombre_extension = extension_archivo[1].toLowerCase();
-
-            //Se valida que la extasion del archivo sea correcta
-            if (nombre_extension === 'png' || nombre_extension === 'jpg' || nombre_extension === 'gif' || nombre_extension === 'tiff' || nombre_extension === 'psd' || nombre_extension === 'bmp' || nombre_extension === 'eps' || nombre_extension === 'svg' || nombre_extension === 'jpeg') {
-
-                postModel.save((err, postPublicado) => {
-                    if (err) return res.status(500).send({ mensaje: "Error al intentar publicar el post" });
-                    if (!postPublicado) return res.status(500).send({ mensaje: "Error al intentar publicar el post" });
-                    idPost = postPublicado._id;
-
-                    //Se sube la imagen del equipo
-                    post.findByIdAndUpdate(idPost, { picture: nombre_archivo }, { new: true }, (err, pictureUpload) => {
-                        if (err) return res.status(500).send({ mensaje: "Error al subir la imagen" });
-                        if (!pictureUpload) return res.status(500).send({ mensaje: "Error al subir la imagen" })
-                        return res.status(200).send({ mensaje: "Publicacion hecha" });
-                    })
-                })
-
-            } else {
-
-                //Se elimina el archivo subido no permitido
-                return eliminarArchivo(res, direccionArchivo, 'Tipo de imagen no permitida');
-            }
         } else {
-            return res.status(500).send({ mensaje: "No se ha subido ningun archivo" })
+            postModel.linkVideo = null;
+            params.live = null;
+
+            postModel.save((err, postPublicado) => {
+                if (err) return res.status(500).send({ mensaje: "Error al intentar publicar el post" });
+                if (!postPublicado) return res.status(500).send({ mensaje: "Error al intentar publicar el post" });
+                return res.status(200).send({ postPublicado });
+            })
         }
 
     }
@@ -117,75 +125,116 @@ function updatePost(req, res) {
         return res.status(500).send({ mensaje: 'No hay ningun parametro correcto para editar' });
     }
 
-    params.dateUpdate = dateToday;
-
     post.findOne({ _id: idPost }).exec((err, postFound) => {
         if (err) return res.status(500).send({ mensaje: "Error al buscar el post" });
         var idAuthor = postFound.author;
+        let linkAntiguo = postFound.linkVideo;
 
         if (idRequested == idAuthor || req.user.rol == "ROL_ADMIN") {
-            post.findByIdAndUpdate(idPost, params, { new: true }, (err, postUpdated) => {
-                if (err) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
-                if (!postUpdated) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
-                if (postUpdated) {
-                    return res.status(200).send({ mensaje: "Post Actualizado" })
-                }
-            })
+
+            var fechas = dateToday.toString()
+            var fechaSplit = fechas.split(" ");
+            
+        switch (fechaSplit[1]) {
+                case 'Jan':
+                    mes = '01';
+                    break;
+
+                case 'Feb':
+                    mes = '02';
+                    break;
+            
+                case 'Mar':
+                    mes = '03';
+                    break;
+
+                case 'Apr':
+                    mes = '04';
+                    break;
+            
+                case 'May':
+                    mes = '05';
+                    break;
+
+                case 'Jun':
+                    mes = '06';
+                    break;
+
+                case 'Jul':
+                    mes = '07';
+                    break;
+
+                case 'Aug':
+                    mes = '08';
+                    break;
+
+                case 'Sep':
+                    mes = '09';
+                    break;
+
+                case 'Oct':
+                    mes = '10';
+                    break;
+
+                case 'Nov':
+                    mes = '11';
+                    break;
+
+                 case 'Dec':
+                    mes = '12';
+                    break;
         }
-        else {
-            return res.status(500).send({ mensaje: "El post no te pertenece" });
-        }
-    })
-}
+             
+        var fecha = `${fechaSplit[2]}/${mes}/${fechaSplit[3]} ${fechaSplit[4]}`;
 
-function updatePicture(req, res) {
-    var idPost = req.params.idPost;
-    var idRequested = req.user.sub;
+        params.dateUpdate = fecha;
 
-    post.findOne({ _id: idPost }).exec((err, postFound) => {
-        if (err) return res.status(500).send({ mensaje: "Error al buscar el post" });
-        var idAuthor = postFound.author;
+            if (params.linkVideo) {
+                if (params.linkVideo === linkAntiguo) {
 
-        if (idRequested == idAuthor) {
-
-            if (req.files) {
-                //En esta variable se guardara la ruta de la imagen
-                var direccionArchivo = req.files.imagen.path;
-
-                //Se elimina las diagonales invertidas de la ruta
-                var direccion_split = direccionArchivo.split('\\');
-
-                //En esta variable se guarda el nombre del archivo
-                var nombre_archivo = direccion_split[3];
-
-                //En esta variable se separa el nombre del archivo de su extension  
-                var extension_archivo = nombre_archivo.split('.');
-
-                //Se guarda el nombre de la extension
-                var nombre_extension = extension_archivo[1].toLowerCase();
-
-                //Se valida que la extasion del archivo sea correcta
-                if (nombre_extension === 'png' || nombre_extension === 'jpg' || nombre_extension === 'gif' || nombre_extension === 'tiff' || nombre_extension === 'psd' || nombre_extension === 'bmp' || nombre_extension === 'eps' || nombre_extension === 'svg' || nombre_extension === 'jpeg') {
-
-                    //Se sube la imagen del equipo
-                    post.findByIdAndUpdate(idPost, { picture: nombre_archivo }, { new: true }, (err, imageUpload) => {
-                        if (err) return res.status(500).send({ mensaje: "Error al cambiar la imagen" });
-                        return res.status(200).send({ mensaje: "Nueva imagen colocada" });
+                    post.findByIdAndUpdate(idPost, params, { new: true }, (err, postUpdated) => {
+                        if (err) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
+                        if (!postUpdated) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
+                        if (postUpdated) {
+                            return res.status(200).send({ mensaje: "Post Actualizado" })
+                        }
                     })
-                } else {
-
-                    //Se elimina el archivo subido no permitido
-                    return eliminarArchivo(res, direccionArchivo, 'Tipo de imagen no permitida');
                 }
-            } else {
-                return res.status(500).send({ mensaje: "No se ha subido ningun archivo" })
+                else {
+                    var link = params.linkVideo;
+                    var linkSplit = link.split('/');
+                    var video = linkSplit[3];
+
+                    params.linkVideo = video;
+
+                    post.findByIdAndUpdate(idPost, params, { new: true }, (err, postUpdated) => {
+                        if (err) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
+                        if (!postUpdated) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
+                        if (postUpdated) {
+                            return res.status(200).send({ mensaje: "Post Actualizado" })
+                        }
+                    })
+                }
             }
+            else {
+
+                params.linkVideo = null;
+                params.live = null;
+
+                post.findByIdAndUpdate(idPost, params, { new: true }, (err, postUpdated) => {
+                    if (err) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
+                    if (!postUpdated) return res.status(500).send({ mensaje: "Error en la peticion de actualizar" })
+                    if (postUpdated) {
+                        return res.status(200).send({ mensaje: "Post Actualizado" })
+                    }
+                })
+            }
+
         }
         else {
             return res.status(500).send({ mensaje: "El post no te pertenece" });
         }
     })
-
 }
 
 function deletePost(req, res) {
@@ -218,7 +267,7 @@ function deletePost(req, res) {
 
 function mostrarPost(req, res) {
 
-    post.find({}).sort({datePublication: -1}).exec((err, postFound) => {
+    post.find({}).sort({ dateHoy: -1 }).exec((err, postFound) => {
         if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
         if (postFound.length === 0) return res.status(404).send({ mensaje: "No hay posts" });
         if (!postFound) return res.status(404).send({ mensaje: 'No hay posts' });
@@ -229,7 +278,7 @@ function mostrarPost(req, res) {
 function postAutor(req, res) {
     var idAuthor = req.params.idAutor;
 
-    post.find({ author: idAuthor }).sort({datePublication: -1}).exec((err, postFound) => {
+    post.find({ author: idAuthor }).sort({ dateHoy: -1 }).exec((err, postFound) => {
         if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
         if (postFound.length === 0) return res.status(404).send({ mensaje: "No hay posts" });
         if (!postFound) return res.status(404).send({ mensaje: 'No hay posts' });
@@ -248,35 +297,20 @@ function verPost(req, res) {
     })
 }
 
-function eliminarArchivo(res, rutaArchivo, mensaje) {
-
-    //Elimina el archivo no apto 
-    fs.unlink(rutaArchivo, (err) => {
-        return res.status(500).send({ mensaje: mensaje })
+function postLive(req, res) {
+    post.find({live: true}).sort({ dateHoy: -1}).exec((err, postFound) => {
+        if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
+        if (postFound.length === 0) return res.status(404).send({ mensaje: "No hay posts" });
+        if (!postFound) return res.status(404).send({ mensaje: 'No hay posts' });
+        return res.status(200).send({ postFound });
     })
 }
-
-function obtenerImagen(req, res) {
-    var nombreImagen = req.params.imagen;
-    var rutaArchivo = `./src/Imagenes/Post/${nombreImagen}`;
-
-    //Funcion para obtener la imagen en archivo
-    fs.access(rutaArchivo, ((err) => {
-        if (err) {
-            return res.status(500).send({ mensaje: "No existe la imagen" });
-        } else {
-            return res.sendFile(path.resolve(rutaArchivo));
-        }
-    }))
-}
-
 module.exports = {
     createPost,
-    obtenerImagen,
     updatePost,
-    updatePicture,
     deletePost,
     mostrarPost,
     postAutor,
-    verPost
+    verPost,
+    postLive
 }

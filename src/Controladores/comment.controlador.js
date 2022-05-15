@@ -2,10 +2,7 @@
 
 var comment = require("../Modelos/comment.model");
 var post = require("../Modelos/post.model");
-const { param } = require("express/lib/request");
-var fs = require('fs');
-var path = require('path');
-const res = require("express/lib/response");
+var mes;
 var today = new Date();
 
 function createComment(req, res) {
@@ -16,8 +13,66 @@ function createComment(req, res) {
     if (params.comment) {
         commentModel.comment = params.comment;
         commentModel.idPost = idPost;
-        commentModel.datePublication = today;
+        commentModel.fecha = today;
+        commentModel.admin = params.admin;
 
+        var fechas = today.toString()
+        var fechaSplit = fechas.split(" ");
+            
+        switch (fechaSplit[1]) {
+                case 'Jan':
+                    mes = '01';
+                    break;
+
+                case 'Feb':
+                    mes = '02';
+                    break;
+            
+                case 'Mar':
+                    mes = '03';
+                    break;
+
+                case 'Apr':
+                    mes = '04';
+                    break;
+            
+                case 'May':
+                    mes = '05';
+                    break;
+
+                case 'Jun':
+                    mes = '06';
+                    break;
+
+                case 'Jul':
+                    mes = '07';
+                    break;
+
+                case 'Aug':
+                    mes = '08';
+                    break;
+
+                case 'Sep':
+                    mes = '09';
+                    break;
+
+                case 'Oct':
+                    mes = '10';
+                    break;
+
+                case 'Nov':
+                    mes = '11';
+                    break;
+
+                 case 'Dec':
+                    mes = '12';
+                    break;
+        }
+             
+        var fechaC = `${fechaSplit[2]}/${mes}/${fechaSplit[3]} ${fechaSplit[4]}`;
+
+        commentModel.datePublication = fechaC;
+        console.log(commentModel.admin);
         post.findOne({ _id: idPost }).exec((err, postFound) => {
             if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
             if (!postFound) return res.status(404).send({ mensaje: "El post no existe" });
@@ -64,7 +119,6 @@ function readComment(req, res) {
     comment.findOne({ _id: idComment }).exec((err, commentFound) => {
         if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
         if (!commentFound) return res.status(404).send({ mensaje: "El comentario no existe" });
-        console.log(commentFound)
         return res.status(200).send({ commentFound })
     })
 }
@@ -78,7 +132,7 @@ function commentPost(req, res) {
         var allowComments = postFound.comments;
 
         if (allowComments === true) {
-            comment.find({ idPost: idPostComment }).exec((err, commentFound) => {
+            comment.find({ idPost: idPostComment }).sort({fecha: -1}).exec((err, commentFound) => {
                 if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
                 return res.status(200).send({ commentFound });
             })
@@ -91,7 +145,7 @@ function commentPost(req, res) {
 }
 
 function comentarios(req, res) {
-    comment.find().sort({datePublication: -1}).exec((err, comentFound)=>{
+    comment.find().sort({fecha: -1}).exec((err, comentFound)=>{
         if (err) return res.status(500).send({ mensaje: "Error en la peticion" });
         if (!comentFound) return res.status(404).send({ mensaje: "El comentario no existe" });
         return res.status(200).send({ comentFound })
